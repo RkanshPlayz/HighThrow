@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HighThrow | Smash Bottles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #06060c;
+            --panel-bg: rgba(15, 15, 30, 0.85);
+            --neon-purple: #bc13fe;
+            --neon-cyan: #00f5ff;
+            --neon-green: #39ff14;
+            --neon-pink: #ff007f;
+            --text-main: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Profile Header Top Status Bar */
+        #profile-header {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        #profile-header i {
+            cursor: pointer;
+            color: var(--neon-cyan);
+            transition: transform 0.2s;
+        }
+
+        #profile-header i:hover {
+            transform: scale(1.2);
+        }
+
+        /* Main Screen Container Stack */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            background: var(--bg-dark);
+            z-index: 10;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Onboarding Setup Pop-up overlay */
+        #onboarding-screen {
+            z-index: 3000;
+            background: #090912;
+        }
+
+        .modal-box {
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-purple);
+            box-shadow: 0 0 30px var(--neon-purple);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            width: 85%;
+            max-width: 360px;
+        }
+
+        .modal-box h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-cyan);
+            margin-top: 0;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .menu-btn {
+            font-family: 'Orbitron', sans-serif;
+            background: var(--purple-fire, #7a04eb);
+            border: 1px solid var(--neon-purple);
+            color: white;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(188, 19, 254, 0.4);
+            transition: all 0.2s;
+        }
+
+        .menu-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--neon-purple);
+        }
+
+        /* Menu UI Section */
+        #menu-screen h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            text-shadow: 0 0 15px var(--neon-purple), 0 0 30px var(--neon-pink);
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        .menu-button-cluster {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 200px;
+        }
+
+        .credits-text {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            letter-spacing: 1px;
+        }
+
+        /* Scrollable Path Level Map */
+        #map-screen {
+            justify-content: flex-start;
+            overflow-y: scroll;
+            padding: 80px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .map-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-cyan);
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+        }
+
+        .map-path-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column-reverse; /* Level 1 at bottom, 100 at top */
+            gap: 30px;
+            padding: 0 40px;
+            box-sizing: border-box;
+        }
+
+        .level-node {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #141424;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        /* Zig-Zag Position offsets */
+        .level-node.pos-left { align-self: flex-start; left: 20px; }
+        .level-node.pos-center { align-self: center; }
+        .level-node.pos-right { align-self: flex-end; right: 20px; }
+
+        .level-node.unlocked {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+            background: #0b1e2d;
+        }
+
+        .level-node.current {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-green);
+            background: #0f2d17;
+        }
+
+        .level-node.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .back-floating-btn {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(20, 20, 35, 0.9);
+            border: 1px solid var(--neon-purple);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2500;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Leaderboard Panel Layout */
+        .leaderboard-container {
+            width: 90%;
+            max-width: 400px;
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-purple);
+            border-radius: 16px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .leaderboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(188, 19, 254, 0.3);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .leaderboard-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            color: var(--neon-pink);
+        }
+
+        .leaderboard-actions { display: flex; gap: 10px; }
+        .leaderboard-actions i { cursor: pointer; font-size: 1.2rem; padding: 5px; transition: color 0.2s; }
+        .leaderboard-actions i:hover { color: var(--neon-cyan); }
+
+        .leaderboard-list {
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 6px;
+            border-left: 3px solid var(--neon-cyan);
+        }
+
+        /* Core Canvas Gameplay Container */
+        #game-screen { background: #040408; }
+        #game-canvas {
+            background: radial-gradient(circle at center, #101026 0%, #040408 100%);
+            display: block;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+        }
+
+        .game-hud {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-sizing: border-box;
+            font-family: 'Orbitron', sans-serif;
+            pointer-events: none;
+        }
+
+        .hud-item { background: rgba(0,0,0,0.6); padding: 6px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+
+    <!-- Top Left Identity Module -->
+    <div id="profile-header" class="hidden">
+        <span id="player-username-display">Player</span>
+        <i class="fa-solid fa-user-pen" onclick="triggerRename()"></i>
+    </div>
+
+    <!-- 1. ONBOARDING SCREEN -->
+    <div id="onboarding-screen" class="screen">
+        <div class="modal-box">
+            <h2>CREATE PROFILE</h2>
+            <input type="text" id="username-input" placeholder="Write Your Name..." maxlength="15">
+            <button class="menu-btn" onclick="saveNewProfile()">LAUNCH GAME</button>
+        </div>
+    </div>
+
+    <!-- 2. MAIN MENU SCREEN -->
+    <div id="menu-screen" class="screen hidden">
+        <h1>HIGHTHROW</h1>
+        <div class="menu-button-cluster">
+            <button class="menu-btn" onclick="switchScreen('map-screen')">PLAY</button>
+            <button class="menu-btn" onclick="openLeaderboard()">RANKINGS</button>
+        </div>
+        <div class="credits-text">MADE BY RKANSHPLAYZ</div>
+    </div>
+
+    <!-- 3. ZIG-ZAG PATH SELECTION MAP -->
+    <div id="map-screen" class="screen hidden">
+        <div class="map-title">LEVEL SELECT</div>
+        <div class="map-path-container" id="map-nodes-target"></div>
+        <div class="back-floating-btn" onclick="switchScreen('menu-screen')"><i class="fa-solid fa-house"></i></div>
+    </div>
+
+    <!-- 4. LEADERBOARD RANKINGS SCREEN -->
+    <div id="leaderboard-screen" class="screen hidden">
+        <div class="leaderboard-container">
+            <div class="leaderboard-header">
+                <h2>LEADERBOARD</h2>
+                <div class="leaderboard-actions">
+                    <i class="fa-solid fa-share-nodes" onclick="shareLeaderboardRank()" title="Copy Link"></i>
+                    <i class="fa-solid fa-rotate" onclick="refreshLeaderboardData()" title="Refresh Scores"></i>
+                </div>
+            </div>
+            <div class="leaderboard-list" id="leaderboard-rows-target"></div>
+        </div>
+        <div class="back-floating-btn" onclick="switchScreen('menu-screen')"><i class="fa-solid fa-house"></i></div>
+    </div>
+
+    <!-- 5. CORE GAMEPLAY INTERACTION LAYER -->
+    <div id="game-screen" class="screen hidden">
+        <div class="game-hud">
+            <div class="hud-item" style="color: var(--neon-cyan);" id="hud-level-text">LEVEL: 1</div>
+            <div class="hud-item" style="color: var(--neon-pink);" id="hud-score-text">SMASHED: 0 / 5</div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+        <div class="back-floating-btn" onclick="exitGameToMap()"><i class="fa-solid fa-map-location-dot"></i></div>
+    </div>
+
+    <script>
+        // Game Local State Data Layer
+        let profile = {
+            name: "",
+            highestLevel: 1
+        };
+
+        let currentActiveLevel = 1;
+        let activeScreen = "onboarding-screen";
+
+        // Physics Engine Context Properties
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        let gameLoopId = null;
+
+        // Slingshot Sling state
+        let rock = { x: 100, y: 0, radius: 12, vx: 0, vy: 0, isThrown: false, isAiming: false };
+        let sling = { startX: 100, startY: 0, currentX: 100, currentY: 0 };
+        let targets = [];
+        let obstacles = [];
+
+        // Global Prepopulated Standings Data Array
+        let communityLeaderboard = [
+            { name: "TeamPVPERS_Top", score: 95 },
+            { name: "AlphaAim_Gaming", score: 74 },
+            { name: "NeonStriker", score: 51 },
+            { name: "RoboThrower", score: 28 },
+            { name: "StoneCrusher", score: 12 }
+        ];
+
+        // System Initialization Verification Hook
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedData = localStorage.getItem('highthrow_profile');
+            if(savedData) {
+                profile = JSON.parse(savedData);
+                document.getElementById('player-username-display').innerText = profile.name;
+                document.getElementById('profile-header').classList.remove('hidden');
+                switchScreen('menu-screen');
+            } else {
+                switchScreen('onboarding-screen');
+            }
+            resizeCanvasWindow();
+        });
+
+        window.addEventListener('resize', resizeCanvasWindow);
+        function resizeCanvasWindow() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            rock.y = canvas.height * 0.7;
+            sling.startY = canvas.height * 0.7;
+        }
+
+        // Screen Management Router Switcher
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(scr => scr.classList.add('hidden'));
+            document.getElementById(screenId).classList.remove('hidden');
+            activeScreen = screenId;
+
+            if (screenId === 'map-screen') {
+                renderZigZagPathNodes();
+            } else if (screenId !== 'game-screen') {
+                stopCoreGameEngine();
+            }
+        }
+
+        // Profile Management Layer Functions
+        function saveNewProfile() {
+            const nameInput = document.getElementById('username-input').value.trim();
+            if(!nameInput) return alert("Please enter a valid gaming handle!");
+            
+            profile.name = nameInput;
+            profile.highestLevel = 1;
+            
+            localStorage.setItem('highthrow_profile', JSON.stringify(profile));
+            document.getElementById('player-username-display').innerText = profile.name;
+            document.getElementById('profile-header').classList.remove('hidden');
+            switchScreen('menu-screen');
+        }
+
+        function triggerRename() {
+            const renameHandle = prompt("Enter your new profile name:", profile.name);
+            if(renameHandle && renameHandle.trim()) {
+                profile.name = renameHandle.trim();
+                localStorage.setItem('highthrow_profile', JSON.stringify(profile));
+                document.getElementById('player-username-display').innerText = profile.name;
+            }
+        }
+
+        // Generate the 100-Level Map Vector Nodes List
+        function renderZigZagPathNodes() {
+            const target = document.getElementById('map-nodes-target');
+            target.innerHTML = "";
+
+            for(let i = 1; i <= 100; i++) {
+                const node = document.createElement('div');
+                node.className = `level-node`;
+                
+                // Set zig-zag layout configuration offset class variables
+                if(i % 4 === 1) node.classList.add('pos-left');
+                else if(i % 4 === 3) node.classList.add('pos-right');
+                else node.classList.add('pos-center');
+
+                // Evaluate path locking system authorization flags
+                if(i <= profile.highestLevel) {
+                    node.classList.add('unlocked');
+                    node.innerHTML = i;
+                    if(i === profile.highestLevel) node.classList.add('current');
+                    node.onclick = () => loadActiveGameplayLevel(i);
+                } else {
+                    node.classList.add('locked');
+                    node.innerHTML = `<i class="fa-solid fa-lock" style="font-size:0.8rem; opacity:0.6;"></i>`;
+                }
+                target.appendChild(node);
+            }
+            
+            // Auto scroll container element focal points down to user current progression marker node
+            setTimeout(() => {
+                const currentMkr = document.querySelector('.level-node.current');
+                if(currentMkr) currentMkr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 200);
+        }
+
+        // Rank metrics array controllers
+        function openLeaderboard() {
+            switchScreen('leaderboard-screen');
+            refreshLeaderboardRowsUI();
+        }
+
+        function refreshLeaderboardRowsUI() {
+            const listTarget = document.getElementById('leaderboard-rows-target');
+            listTarget.innerHTML = "";
+
+            // Inject current profile data variables inside competitive metrics arrays dynamically
+            let compositeScores = [...communityLeaderboard];
+            const identityExists = compositeScores.some(p => p.name === profile.name);
+            if(!identityExists) {
+                compositeScores.push({ name: profile.name, score: profile.highestLevel });
+            } else {
+                compositeScores.forEach(p => { if(p.name === profile.name) p.score = profile.highestLevel; });
+            }
+
+            compositeScores.sort((a,b) => b.score - a.score);
+
+            compositeScores.forEach((row, idx) => {
+                const div = document.createElement('div');
+                div.className = "leaderboard-row";
+                if(row.name === profile.name) div.style.borderColor = "var(--neon-green)";
+                div.innerHTML = `<span>#${idx+1} ${row.name}</span><strong>Lvl ${row.score}</strong>`;
+                listTarget.appendChild(div);
+            });
+        }
+
+        function refreshLeaderboardData() {
+            alert("Updating network ranking tables...");
+            refreshLeaderboardRowsUI();
+        }
+
+        function shareLeaderboardRank() {
+            navigator.clipboard.writeText(window.location.href);
+            alert("HighThrow share link copied to clipboard successfully!");
+        }
+
+        // Core Physics Level Generator Engine
+        function loadActiveGameplayLevel(lvlNum) {
+            currentActiveLevel = lvlNum;
+            switchScreen('game-screen');
+            document.getElementById('hud-level-text').innerText = `LEVEL: ${lvlNum}`;
+            document.getElementById('hud-score-text').innerText = `SMASHED: 0 / 5`;
+            
+            resetRockProjectileState();
+            
+            // Build procedural target nodes based on requested level progression metrics
+            targets = [];
+            obstacles = [];
+            const bottleSpacing = canvas.width * 0.12;
+            const startX = canvas.width * 0.4;
+
+            for(let i = 0; i < 5; i++) {
+                targets.push({
+                    x: startX + (i * bottleSpacing),
+                    y: canvas.height * 0.3 + (Math.sin(i + lvlNum) * 30),
+                    width: 25,
+                    height: 55,
+                    isSmashed: false,
+                    // Harder levels trigger vertical base movements speeds
+                    speed: lvlNum >= 30 ? (0.8 + (lvlNum * 0.02)) * (i % 2 === 0 ? 1 : -1) : 0,
+                    minY: canvas.height * 0.15,
+                    maxY: canvas.height * 0.55
+                });
+            }
+
+            // Late levels build intercept blocks configuration structures
+            if(lvlNum >= 50) {
+                obstacles.push({
+                    x: canvas.width * 0.5,
+                    y: canvas.height * 0.45,
+                    width: 40,
+                    height: canvas.height * 0.2,
+                    speedY: lvlNum >= 75 ? 2 : 0,
+                    dir: 1
+                });
+            }
+
+            // Run interaction capture engines inside Canvas contexts elements
+            canvas.addEventListener('touchstart', touchStartAimHandler, {pasive: false});
+            canvas.addEventListener('touchmove', touchMoveAimHandler, {pasive: false});
+            canvas.addEventListener('touchend', touchEndLaunchHandler);
+            
+            canvas.addEventListener('mousedown', mouseStartAimHandler);
+            canvas.addEventListener('mousemove', mouseMoveAimHandler);
+            canvas.addEventListener('mouseup', mouseEndLaunchHandler);
+
+            stopCoreGameEngine();
+            gameLoopId = requestAnimationFrame(updateGameFramePhysics);
+        }
+
+        function resetRockProjectileState() {
+            rock.x = 100;
+            rock.y = canvas.height * 0.7;
+            rock.vx = 0;
+            rock.vy = 0;
+            rock.isThrown = false;
+            rock.isAiming = false;
+        }
+
+        // Slingshot Aim Handlers (Mouse)
+        function mouseStartAimHandler(e) { if(!rock.isThrown) startAimingAction(e.clientX, e.clientY); }
+        function mouseMoveAimHandler(e) { if(rock.isAiming) updateAimingAction(e.clientX, e.clientY); }
+        function mouseEndLaunchHandler() { if(rock.isAiming) releaseLaunchRock(); }
+
+        // Slingshot Aim Handlers (Touch for Mobile Devices)
+        function touchStartAimHandler(e) { if(!rock.isThrown) { startAimingAction(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); } }
+        function touchMoveAimHandler(e) { if(rock.isAiming) { updateAimingAction(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); } }
+        function touchEndLaunchHandler() { if(rock.isAiming) releaseLaunchRock(); }
+
+        function startAimingAction(clientX, clientY) {
+            const dist = Math.hypot(clientX - rock.x, clientY - rock.y);
+            if(dist < 40) {
+                rock.isAiming = true;
+                sling.currentX = clientX;
+                sling.currentY = clientY;
+            }
+        }
+
+        function updateAimingAction(clientX, clientY) {
+            // Drag boundaries engine caps slingshot elasticity pull distance metrics
+            const angle = Math.atan2(clientY - sling.startY, clientX - sling.startX);
+            const dist = Math.min(80, Math.hypot(clientX - sling.startX, clientY - sling.startY));
+            
+            sling.currentX = sling.startX + Math.cos(angle) * dist;
+            sling.currentY = sling.startY + Math.sin(angle) * dist;
+            
+            rock.x = sling.currentX;
+            rock.y = sling.currentY;
+        }
+
+        function releaseLaunchRock() {
+            rock.isAiming = false;
+            rock.isThrown = true;
+            // High velocity conversion multiplier parameters logic setup mapping
+            rock.vx = (sling.startX - sling.currentX) * 0.16;
+            rock.vy = (sling.startY - sling.currentY) * 0.16;
+        }
+
+        // Frame Calculations System Logic Core Loop
+        function updateGameFramePhysics() {
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+
+            // Draw Aim Trajectory Guidance Dotted Lines
+            if(rock.isAiming) {
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(0, 245, 255, 0.4)";
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 8]);
+                
+                let tx = rock.x; let ty = rock.y;
+                let tvx = (sling.startX - sling.currentX) * 0.16;
+                let tvy = (sling.startY - sling.currentY) * 0.16;
+                
+                ctx.moveTo(tx, ty);
+                for(let i=0; i<30; i++) {
+                    tx += tvx; ty += tvy;
+                    tvy += 0.25; // Pre-calculate gravity arch curvature values
+                    ctx.lineTo(tx, ty);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Draw Base Slingshot Anchors Structures Frame Nodes
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(188, 19, 254, 0.6)";
+            ctx.lineWidth = 4;
+            ctx.moveTo(sling.startX - 20, sling.startY);
+            ctx.lineTo(rock.x, rock.y);
+            ctx.moveTo(sling.startX + 20, sling.startY);
+            ctx.lineTo(rock.x, rock.y);
+            ctx.stroke();
+
+            // Intercept blocks structural operations logic matrix configurations
+            obstacles.forEach(obs => {
+                if(obs.speedY !== 0) {
+                    obs.y += obs.speedY * obs.dir;
+                    if(obs.y < canvas.height * 0.25 || obs.y > canvas.height * 0.6) obs.dir *= -1;
+                }
+                ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+                ctx.strokeStyle = varName = "#ffffff";
+                ctx.lineWidth = 1;
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+
+                // Handle basic stone block structure hard surface impact bounces
+                if(rock.isThrown && rock.x + rock.radius > obs.x && rock.x - rock.radius < obs.x + obs.width &&
+                   rock.y + rock.radius > obs.y && rock.y - rock.radius < obs.y + obs.height) {
+                    rock.vx *= -0.8;
+                }
+            });
+
+            // Target Bottling movement updates matrix tracking logic arrays loop layers
+            let allBottlesBroken = true;
+            let smashedCount = 0;
+
+            targets.forEach(tgt => {
+                if(!tgt.isSmashed) {
+                    allBottlesBroken = false;
+                    tgt.y += tgt.speed;
+                    if(tgt.y < tgt.minY || tgt.y > tgt.maxY) tgt.speed *= -1;
+
+                    // Neon targets vector draws rendering engine loop layers
+                    ctx.fillStyle = "rgba(0, 245, 255, 0.2)";
+                    ctx.strokeStyle = "var(--neon-cyan)";
+                    ctx.lineWidth = 2;
+                    ctx.shadowColor = "var(--neon-cyan)";
+                    ctx.shadowBlur = 10;
+                    ctx.fillRect(tgt.x, tgt.y, tgt.width, tgt.height);
+                    ctx.strokeRect(tgt.x, tgt.y, tgt.width, tgt.height);
+                    ctx.shadowBlur = 0;
+
+                    // Evaluate stone tracking collision intercept matrix positions values metrics
+                    if(rock.isThrown && rock.x > tgt.x && rock.x < tgt.x + tgt.width &&
+                       rock.y > tgt.y && rock.y < tgt.y + tgt.height) {
+                        tgt.isSmashed = true;
+                        smashedCount++;
+                        document.getElementById('hud-score-text').innerText = `SMASHED: ${document.querySelectorAll('.smashed').length + 1} / 5`;
+                    }
+                } else {
+                    smashedCount++;
+                }
+            });
+
+            // Draw Projectile Rock Vector Component Layer Frame
+            ctx.beginPath();
+            ctx.fillStyle = "#e0aaff";
+            ctx.strokeStyle = "var(--neon-purple)";
+            ctx.lineWidth = 2;
+            ctx.shadowColor = "var(--neon-purple)";
+            ctx.shadowBlur = 12;
+            ctx.arc(rock.x, rock.y, rock.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Compute running motion metrics velocities arrays maps bounds parameters logic
+            if(rock.isThrown) {
+                rock.x += rock.vx;
+                rock.y += rock.vy;
+                rock.vy += 0.25; // Simulates constant gravities weights force vectors
+
+                // Re-evaluate boundaries bounds rules to handle out of matrix viewport resets loops
+                if(rock.y > canvas.height + 50 || rock.x > canvas.width + 50 || rock.x < -50) {
+                    resetRockProjectileState();
+                }
+            }
+
+            // Check running level exit conditions metrics verification sequences layers
+            if(allBottlesBroken) {
+                stopCoreGameEngine();
+                alert(`LEVEL ${currentActiveLevel} CLEARED!`);
+                
+                // Advance auto-saving file handling state logic parameters layers dynamically
+                if(currentActiveLevel === profile.highestLevel && profile.highestLevel < 100) {
+                    profile.highestLevel++;
+                    localStorage.setItem('highthrow_profile', JSON.stringify(profile));
+                }
+                switchScreen('map-screen');
+                return;
+            }
+
+            gameLoopId = requestAnimationFrame(updateGameFramePhysics);
+        }
+
+        function stopCoreGameEngine() {
+            if(gameLoopId) {
+                cancelAnimationFrame(gameLoopId);
+                gameLoopId = null;
+            }
+        }
+
+        function exitGameToMap() {
+            stopCoreGameEngine();
+            switchScreen('map-screen');
+        }
+    </script>
+</body>
+</html>
